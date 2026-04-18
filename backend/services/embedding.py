@@ -1,5 +1,4 @@
 import os
-import sys
 import warnings
 import logging
 
@@ -10,10 +9,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
 
 warnings.filterwarnings("ignore")
-for _log in [
-    "transformers", "transformers.modeling_utils",
-    "huggingface_hub", "huggingface_hub.file_download",
-]:
+for _log in ["transformers", "transformers.modeling_utils",
+             "huggingface_hub", "huggingface_hub.file_download"]:
     logging.getLogger(_log).setLevel(logging.ERROR)
 
 from transformers import CLIPVisionModel, CLIPProcessor
@@ -28,21 +25,14 @@ _processor = None
 def _load_model():
     global _model, _processor
     if _model is None:
-        # Disable tqdm progress bars during model load — safe in all contexts
-        from tqdm import tqdm
-        from unittest.mock import patch
-
-        with patch("tqdm.tqdm", lambda *a, **kw: iter(a[0]) if a else None), \
-             patch("tqdm.auto.tqdm", lambda *a, **kw: iter(a[0]) if a else None):
-            _model = CLIPVisionModel.from_pretrained(
-                "openai/clip-vit-base-patch32",
-                ignore_mismatched_sizes=True,
-                local_files_only=True,   # use cached weights, skip shard check
-            )
-            _processor = CLIPProcessor.from_pretrained(
-                "openai/clip-vit-base-patch32",
-                local_files_only=True,
-            )
+        _model = CLIPVisionModel.from_pretrained(
+            "openai/clip-vit-base-patch32",
+            local_files_only=True,
+        )
+        _processor = CLIPProcessor.from_pretrained(
+            "openai/clip-vit-base-patch32",
+            local_files_only=True,
+        )
         _model.eval()
     return _model, _processor
 
